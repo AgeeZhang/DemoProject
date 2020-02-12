@@ -1,0 +1,2 @@
+include ':app', ':UpdateLibrary'
+rootProject.name='My Application'

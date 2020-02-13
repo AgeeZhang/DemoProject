@@ -1,13 +1,9 @@
 package com.example.myapplication;
 
-import android.app.Application;
-import android.content.Intent;
-
+import com.jess.arms.base.BaseApplication;
 import com.zcitc.updatelibrary.UpdateController;
-import com.zcitc.updatelibrary.service.DownloadService;
-import com.zcitc.updatelibrary.thread.UpdateThread;
 
-public class MainApplication extends Application {
+public class MainApplication extends BaseApplication {
 
     @Override
     public void onCreate() {

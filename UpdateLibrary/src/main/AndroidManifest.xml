@@ -1,13 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zcitc.updatelibrary">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application>
         <service android:name=".service.DownloadService" />
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="packgeName.fileProvider"
+            android:authorities="com.zcitc.updatelibrary.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

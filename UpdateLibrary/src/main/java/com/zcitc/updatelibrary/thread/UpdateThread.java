@@ -5,16 +5,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.zcitc.updatelibrary.UpdateEventHandler;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class UpdateThread extends Thread {
+
     private final static Logger log = LoggerFactory.getLogger(UpdateThread.class);
+
+    private static final int ACTION_UPDATE_THREAD_QUIT = 0X1010; // quit this thread
+    private static final int ACTION_UPDATE_DOWLOAD = 0X2010; // quit this thread
+    private static final int ACTION_UPDATE_INSTALL = 0X2011; // quit this thread
 
     private Context mContext;
     private UpdateThreadHandler mUpdateHandler;
+    private final DownloadEventHandler mDownloadEventHandler;
     private boolean mReady;
 
     private static final class UpdateThreadHandler extends Handler {
@@ -36,13 +40,16 @@ public class UpdateThread extends Thread {
                 return;
             }
             switch (msg.what) {
-
+                case ACTION_UPDATE_THREAD_QUIT:
+                    mUpdateThread.exit();
+                    break;
             }
         }
     }
 
     public UpdateThread(Context context) {
         this.mContext = context;
+        this.mDownloadEventHandler = new DownloadEventHandler(mContext);
     }
 
     @Override
@@ -50,22 +57,18 @@ public class UpdateThread extends Thread {
         log.trace("start to run");
         Looper.prepare();
         mUpdateHandler = new UpdateThreadHandler(this);
-        // enter thread looper
         mReady = true;
         Looper.loop();
     }
 
     public final void exit() {
         if (Thread.currentThread() != this) {
-            log.warn("exit() - exit app thread asynchronously");
-            mUpdateHandler.sendEmptyMessage(0);
+            mUpdateHandler.sendEmptyMessage(ACTION_UPDATE_THREAD_QUIT);
             return;
         }
         mReady = false;
-        log.debug("exit() > start");
         Looper.myLooper().quit();
         mUpdateHandler.release();
-        log.debug("exit() > end");
     }
 
     public final void waitForReady() {
@@ -79,12 +82,24 @@ public class UpdateThread extends Thread {
         }
     }
 
-    public void sendDownloadSignal(){
-        Message envelop = new Message();
-//        envelop.what = ACTION_WORKER_CONNECT_TO_RTM_SERVICE;
-//        envelop.obj = new String[]{uid};
-        mUpdateHandler.handleMessage(envelop);
+    public DownloadEventHandler eventHandler() {
+        return mDownloadEventHandler;
     }
 
+    public void downloadStart() {
+        eventHandler().mDownloadEventHandler.onDownLoadStart();
+    }
+
+    public void downloading(long p) {
+        eventHandler().mDownloadEventHandler.onProgress(p);
+    }
+
+    public void downloadSuccess(String path) {
+        eventHandler().mDownloadEventHandler.onSuccess(path);
+    }
+
+    public void downloadFail(String msg) {
+        eventHandler().mDownloadEventHandler.onFail(msg);
+    }
 
 }

@@ -16,13 +16,4 @@ public interface UpdateContract {
 
         void onSuccess(String path);
     }
-
-    interface OnInstallCallback {
-
-        void onNotInstallPermission();
-
-        void OnProviderInstallPermission(String path);
-
-        void OnInstallPermission(String path);
-    }
 }

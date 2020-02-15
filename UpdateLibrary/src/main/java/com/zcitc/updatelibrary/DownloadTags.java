@@ -6,6 +6,7 @@ public @interface DownloadTags {
     String APK_URL = "apkUrl";
     String FILE_MD5 = "fileMD5";
     String ICON_ID = "iconId";
+
     int DOWNLOAD_START = 0;
     int DOWNLOADING = 1;
     int DOWNLOAD_SUCCESS = 2;

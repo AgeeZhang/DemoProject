@@ -1,4 +1,4 @@
-package com.zcitc.updatelibrary.service;
+package com.example.myapplication;
 
 import io.reactivex.Observable;
 import okhttp3.ResponseBody;

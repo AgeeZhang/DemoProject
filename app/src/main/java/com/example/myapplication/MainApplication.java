@@ -1,14 +1,14 @@
 package com.example.myapplication;
 
 import com.jess.arms.base.BaseApplication;
-import com.zcitc.updatelibrary.UpdateController;
+import com.zcitc.updatelibrary.BaseUpdateController;
 
 public class MainApplication extends BaseApplication {
 
     @Override
     public void onCreate() {
         super.onCreate();
-        UpdateController.getInstance().init(this);
+        UpdateController.getInstance().init(this, DownloadService.class);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.zcitc.updatelibrary;
+package com.example.myapplication;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -24,7 +24,7 @@ public class UpdateDialog extends Dialog {
     private OnUpdateClickListener closeClickListener;
 
     public UpdateDialog(@NonNull Context context, boolean forceUpdate, String versionCode) {
-        super(context, R.style.UpdateDialogStyle);
+        super(context, com.zcitc.updatelibrary.R.style.UpdateDialogStyle);
         isForceUpdate = forceUpdate;
         mVersionCode = versionCode;
     }
@@ -32,11 +32,11 @@ public class UpdateDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dialog_update);
-        updateHint = findViewById(R.id.update_hint);
-        confirmBtn = findViewById(R.id.update_btn);
-        closeBtn = findViewById(R.id.update_close);
-        progressBar = findViewById(R.id.update_progress);
+        setContentView(com.zcitc.updatelibrary.R.layout.dialog_update);
+        updateHint = findViewById(com.zcitc.updatelibrary.R.id.update_hint);
+        confirmBtn = findViewById(com.zcitc.updatelibrary.R.id.update_btn);
+        closeBtn = findViewById(com.zcitc.updatelibrary.R.id.update_close);
+        progressBar = findViewById(com.zcitc.updatelibrary.R.id.update_progress);
 
         progressBar.setVisibility(View.GONE);
         confirmBtn.setVisibility(View.VISIBLE);

@@ -1,4 +1,4 @@
-package com.zcitc.updatelibrary;
+package com.zcitc.updatelibrary.contract;
 
 public @interface DownloadTags {
     String MUST_BE_UPDATED = "mustBeUpdated";

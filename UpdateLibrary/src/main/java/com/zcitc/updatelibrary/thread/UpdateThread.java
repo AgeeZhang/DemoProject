@@ -102,4 +102,5 @@ public class UpdateThread extends Thread {
         eventHandler().mDownloadEventHandler.onFail(msg);
     }
 
+
 }

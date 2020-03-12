@@ -12,19 +12,15 @@ import androidx.core.content.FileProvider;
 
 import com.jess.arms.integration.AppManager;
 import com.jess.arms.utils.LogUtils;
-import com.zcitc.updatelibrary.contract.UpdateContract;
+import com.zcitc.updatelibrary.contract.DownloadTags;
+import com.zcitc.updatelibrary.contract.UpdateInterface;
 import com.zcitc.updatelibrary.thread.UpdateThread;
 import com.zcitc.updatelibrary.utils.AppUtils;
 import com.zdf.activitylauncher.ActivityLauncher;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 
-public abstract class BaseUpdateController implements UpdateContract.OnDownloadCallback {
-
-    private final static Logger log = LoggerFactory.getLogger(BaseUpdateController.class);
+public abstract class BaseUpdateController implements UpdateInterface.OnDownloadCallback {
 
     protected Context mContext;
     protected Class<?> mService;
@@ -70,7 +66,11 @@ public abstract class BaseUpdateController implements UpdateContract.OnDownloadC
         intent.putExtra(DownloadTags.APK_URL, "https://dldir1.qq.com/weixin/android/weixin7010android1580.apk");
         intent.putExtra(DownloadTags.FILE_MD5, "414ead6cfed19db527894f05ace44702");
         intent.putExtra(DownloadTags.ICON_ID, mIntent.getIntExtra(DownloadTags.ICON_ID, 0));
-        mContext.startService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mContext.startForegroundService(intent);
+        } else {
+            mContext.startService(intent);
+        }
     }
 
     @Override
@@ -85,7 +85,7 @@ public abstract class BaseUpdateController implements UpdateContract.OnDownloadC
     public void onProgress(long progress) {
         Message envelop = new Message();
         envelop.what = DownloadTags.DOWNLOADING;
-        envelop.obj = progress;
+        envelop.obj = Integer.valueOf(String.valueOf(progress));
         OnDownloadEvent(envelop);
     }
 

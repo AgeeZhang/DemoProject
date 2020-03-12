@@ -1,5 +1,7 @@
 package com.example.myapplication;
 
+import android.content.Intent;
+
 import com.jess.arms.base.BaseApplication;
 import com.zcitc.updatelibrary.BaseUpdateController;
 

@@ -6,8 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import com.zcitc.updatelibrary.DownloadTags;
-import com.zcitc.updatelibrary.BaseUpdateController;
+import com.zcitc.updatelibrary.contract.DownloadTags;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 

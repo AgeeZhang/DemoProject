@@ -7,8 +7,7 @@ import android.os.Message;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.zcitc.updatelibrary.BaseUpdateController;
-import com.zcitc.updatelibrary.DownloadTags;
-import com.zcitc.updatelibrary.contract.UpdateContract;
+import com.zcitc.updatelibrary.contract.DownloadTags;
 
 public class UpdateController extends BaseUpdateController {
 
@@ -28,6 +27,7 @@ public class UpdateController extends BaseUpdateController {
         this.mContext = var1;
         this.mService = cls;
         initUpdateThread(var1);
+        updateThread().eventHandler().addEventHandler(this);
     }
 
     @Override
@@ -52,16 +52,16 @@ public class UpdateController extends BaseUpdateController {
     public void OnDownloadEvent(Message msg) {
         switch (msg.what) {
             case DownloadTags.DOWNLOAD_START:
-                mUpdateDialog.onDownloadStart();
+                mActivity.runOnUiThread(() -> mUpdateDialog.onDownloadStart());
                 break;
             case DownloadTags.DOWNLOADING:
-                mUpdateDialog.onDownloading((int) msg.obj);
+                mActivity.runOnUiThread(() -> mUpdateDialog.onDownloading((int) msg.obj));
                 break;
             case DownloadTags.DOWNLOAD_SUCCESS:
-                mUpdateDialog.onDownloadSuccess(() -> sendInstallSignal((String) msg.obj));
+                mActivity.runOnUiThread(() -> mUpdateDialog.onDownloadSuccess(() -> sendInstallSignal((String) msg.obj)));
                 break;
             case DownloadTags.DOWNLOAD_FAIL:
-                mUpdateDialog.onDownloadFail(() -> sendRetrySignal());
+                mActivity.runOnUiThread(() -> mUpdateDialog.onDownloadFail(() -> sendRetrySignal()));
                 break;
         }
     }

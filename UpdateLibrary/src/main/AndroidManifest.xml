@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application>
-        <service android:name=".service.DownloadService" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.zcitc.updatelibrary.fileProvider"

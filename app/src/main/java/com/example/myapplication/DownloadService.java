@@ -1,17 +1,12 @@
 package com.example.myapplication;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Message;
-
-import androidx.core.app.NotificationCompat;
 
 import com.jess.arms.utils.ArmsUtils;
 import com.jess.arms.utils.LogUtils;
-import com.zcitc.updatelibrary.DownloadTags;
+import com.zcitc.updatelibrary.contract.DownloadTags;
 import com.zcitc.updatelibrary.service.BaseDownloadService;
 import com.zcitc.updatelibrary.thread.UpdateThread;
 import com.zcitc.updatelibrary.utils.AppUtils;
@@ -29,6 +24,7 @@ public class DownloadService extends BaseDownloadService {
     private RxErrorHandler mErrorHandler;
     private String APK_dir = "";
     private String SAVE_PATH = File.separator + "Update" + File.separator + "APK" + File.separator;
+    private int mSmallIcon = 0;
 
     @Override
     public void init() {
@@ -45,6 +41,8 @@ public class DownloadService extends BaseDownloadService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String apkUrl = intent.getStringExtra(DownloadTags.APK_URL);
         String fileMd5 = intent.getStringExtra(DownloadTags.FILE_MD5);
+        mSmallIcon = intent.getIntExtra(DownloadTags.ICON_ID, 0);
+        initNotification();
         startDownload(apkUrl, fileMd5);
         return super.onStartCommand(intent, flags, startId);
     }
@@ -87,14 +85,12 @@ public class DownloadService extends BaseDownloadService {
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
-//                                        updateThread().downloadStart();
-//                                        startedDownload();
+                                        updateThread().downloadStart();
                                     }
 
                                     @Override
                                     public void onProgress(long p) {
-//                                        updateThread().downloading(p);
-//                                        loadingDownload(p);
+                                        updateThread().downloading(p);
                                     }
 
                                     @Override
@@ -104,8 +100,7 @@ public class DownloadService extends BaseDownloadService {
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
-//                                        updateThread().downloadFail("");
-//                                        failDownload();
+                                        updateThread().downloadFail("");
                                     }
 
                                     @Override
@@ -115,7 +110,7 @@ public class DownloadService extends BaseDownloadService {
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
-//                                        updateThread().downloadSuccess(path);
+                                        updateThread().downloadSuccess(path);
                                     }
                                 });
                     }
@@ -128,7 +123,7 @@ public class DownloadService extends BaseDownloadService {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-//                        updateThread().downloadFail("");
+                        updateThread().downloadFail("");
                     }
                 });
     }
@@ -137,13 +132,8 @@ public class DownloadService extends BaseDownloadService {
     public void notifyDownloadState(Message msg) {
         switch (msg.what) {
             case DownloadTags.DOWNLOAD_START:
-                mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {  //Android 8.0以上
-                    NotificationChannel mChannel = new NotificationChannel("10086", "Update download service", NotificationManager.IMPORTANCE_LOW);
-                    mNotificationManager.createNotificationChannel(mChannel);
-                }
-                builder = new NotificationCompat.Builder(getApplicationContext());
                 builder.setOngoing(true);
+                builder.setSmallIcon(mSmallIcon);
                 builder.setAutoCancel(false);
                 builder.setContentIntent(null);
                 builder.setContentText("0%");

@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.zcitc.updatelibrary.contract.UpdateContract.*;
+import com.zcitc.updatelibrary.contract.UpdateInterface.*;
 
 public class UpdateDialog extends Dialog {
 
@@ -32,11 +32,11 @@ public class UpdateDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.zcitc.updatelibrary.R.layout.dialog_update);
-        updateHint = findViewById(com.zcitc.updatelibrary.R.id.update_hint);
-        confirmBtn = findViewById(com.zcitc.updatelibrary.R.id.update_btn);
-        closeBtn = findViewById(com.zcitc.updatelibrary.R.id.update_close);
-        progressBar = findViewById(com.zcitc.updatelibrary.R.id.update_progress);
+        setContentView(R.layout.dialog_update);
+        updateHint = findViewById(R.id.update_hint);
+        confirmBtn = findViewById(R.id.update_btn);
+        closeBtn = findViewById(R.id.update_close);
+        progressBar = findViewById(R.id.update_progress);
 
         progressBar.setVisibility(View.GONE);
         confirmBtn.setVisibility(View.VISIBLE);

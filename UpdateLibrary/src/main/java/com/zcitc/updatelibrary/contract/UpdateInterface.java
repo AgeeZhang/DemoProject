@@ -1,6 +1,6 @@
 package com.zcitc.updatelibrary.contract;
 
-public interface UpdateContract {
+public interface UpdateInterface {
 
     interface OnUpdateClickListener {
         void OnClick();

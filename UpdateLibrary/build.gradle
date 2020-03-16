@@ -29,7 +29,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation rootProject.ext.dependencies['appcompat-v7']
     testImplementation 'junit:junit:4.12'
-    implementation 'me.jessyan:arms:2.5.2'
     implementation rootProject.ext.dependencies["slf4j-api"]
     implementation 'com.github.bbssyyuui:ActivityLauncher:1.0.2'
 }

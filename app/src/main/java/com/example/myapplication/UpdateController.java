@@ -6,6 +6,7 @@ import android.os.Message;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.jess.arms.utils.ArmsUtils;
 import com.zcitc.updatelibrary.BaseUpdateController;
 import com.zcitc.updatelibrary.contract.DownloadTags;
 
@@ -33,8 +34,8 @@ public class UpdateController extends BaseUpdateController {
     @Override
     public void needUpdate(AppCompatActivity activity, Intent intent) {
         this.mActivity = activity;
-        this.mIntent = intent;
-        mUpdateDialog = new UpdateDialog(activity, mustBeUpdated(), mIntent.getStringExtra(DownloadTags.NEW_VERSION));
+        this.mTempData = new TempData(intent);
+        mUpdateDialog = new UpdateDialog(activity, mustBeUpdated(), mTempData.NewVersion);
         mUpdateDialog.setUpdateClickListener(() -> {
             sendDownloadSignal();
             // 非必须升级，后台下载安装
@@ -64,5 +65,15 @@ public class UpdateController extends BaseUpdateController {
                 mActivity.runOnUiThread(() -> mUpdateDialog.onDownloadFail(() -> sendRetrySignal()));
                 break;
         }
+    }
+
+    @Override
+    public void OnNotInstallPermission() {
+        OnNotInstallPermission(ArmsUtils.obtainAppComponentFromContext(mContext).appManager().getTopActivity());
+    }
+
+    @Override
+    public void OnInstallPermission(String path) {
+        OnInstallPermission(ArmsUtils.obtainAppComponentFromContext(mContext).appManager().getTopActivity(), path);
     }
 }

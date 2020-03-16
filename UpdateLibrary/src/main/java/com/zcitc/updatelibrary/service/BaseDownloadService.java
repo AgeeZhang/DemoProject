@@ -1,26 +1,28 @@
 package com.zcitc.updatelibrary.service;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Message;
 
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-
 import com.zcitc.updatelibrary.contract.DownloadTags;
 import com.zcitc.updatelibrary.contract.UpdateInterface;
 import com.zcitc.updatelibrary.thread.UpdateThread;
 
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+
 public abstract class BaseDownloadService extends Service implements UpdateInterface.OnDownloadCallback {
 
     protected final int NotificationID = 0x10000;
+    protected final String channelId = "10086";
     protected NotificationManager mNotificationManager = null;
     protected NotificationCompat.Builder builder;
+    protected Notification notification;
 
     abstract public void init();
 
@@ -51,15 +53,15 @@ public abstract class BaseDownloadService extends Service implements UpdateInter
     }
 
     protected void initNotification() {
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {  //Android 8.0以上
-            NotificationChannel mChannel = new NotificationChannel("10086", "Update download service", NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel mChannel = new NotificationChannel(channelId, getPackageName(), NotificationManager.IMPORTANCE_LOW);
             mChannel.setDescription("下载");
             mChannel.enableLights(false);
             mChannel.enableVibration(false);
             mNotificationManager.createNotificationChannel(mChannel);
         }
-        builder = new NotificationCompat.Builder(getApplicationContext());
+        builder = new NotificationCompat.Builder(this, getPackageName());
     }
 
     @Override
@@ -93,9 +95,5 @@ public abstract class BaseDownloadService extends Service implements UpdateInter
         envelop.obj = path;
         notifyDownloadState(envelop);
     }
-
-//    public boolean checkNotification() {
-//        return NotificationManagerCompat.from(this).areNotificationsEnabled();
-//    }
 
 }

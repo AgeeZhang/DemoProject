@@ -1,11 +1,16 @@
 package com.example.myapplication;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Message;
 
 import com.jess.arms.utils.ArmsUtils;
 import com.jess.arms.utils.LogUtils;
+import com.zcitc.updatelibrary.BuildConfig;
 import com.zcitc.updatelibrary.contract.DownloadTags;
 import com.zcitc.updatelibrary.service.BaseDownloadService;
 import com.zcitc.updatelibrary.thread.UpdateThread;
@@ -13,18 +18,24 @@ import com.zcitc.updatelibrary.utils.AppUtils;
 
 import java.io.File;
 
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.FileProvider;
 import io.reactivex.schedulers.Schedulers;
 import me.jessyan.rxerrorhandler.core.RxErrorHandler;
 import me.jessyan.rxerrorhandler.handler.ErrorHandleSubscriber;
-import me.jessyan.rxerrorhandler.handler.listener.ResponseErrorListener;
 import okhttp3.ResponseBody;
 
 public class DownloadService extends BaseDownloadService {
 
     private RxErrorHandler mErrorHandler;
+    private PendingIntent mPendingIntent;
+    private Intent mIntent;
     private String APK_dir = "";
     private String SAVE_PATH = File.separator + "Update" + File.separator + "APK" + File.separator;
+
     private int mSmallIcon = 0;
+    private String mApkUrl;
+    private String mFileMd5;
 
     @Override
     public void init() {
@@ -39,29 +50,24 @@ public class DownloadService extends BaseDownloadService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String apkUrl = intent.getStringExtra(DownloadTags.APK_URL);
-        String fileMd5 = intent.getStringExtra(DownloadTags.FILE_MD5);
+        mApkUrl = intent.getStringExtra(DownloadTags.APK_URL);
+        mFileMd5 = intent.getStringExtra(DownloadTags.FILE_MD5);
         mSmallIcon = intent.getIntExtra(DownloadTags.ICON_ID, 0);
         initNotification();
-        startDownload(apkUrl, fileMd5);
+        startDownload(mApkUrl, mFileMd5);
         return super.onStartCommand(intent, flags, startId);
     }
 
     private void initApkDir() {
         APK_dir = getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + SAVE_PATH;
         File destDir = new File(APK_dir);
-        if (!destDir.exists()) {// 判断文件夹是否存在
+        if (!destDir.exists()) {
             destDir.mkdirs();
         }
     }
 
     private void initError(Context context) {
-        mErrorHandler = RxErrorHandler.builder().with(context).responseErrorListener(new ResponseErrorListener() {
-            @Override
-            public void handleResponseError(Context context, Throwable t) {
-                LogUtils.warnInfo(t.getMessage());
-            }
-        }).build();
+        mErrorHandler = RxErrorHandler.builder().with(context).responseErrorListener((context1, t) -> LogUtils.warnInfo(t.getMessage())).build();
     }
 
     @Override
@@ -100,7 +106,7 @@ public class DownloadService extends BaseDownloadService {
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
-                                        updateThread().downloadFail("");
+                                        updateThread().downloadFail("下载失败，请重试！");
                                     }
 
                                     @Override
@@ -123,7 +129,7 @@ public class DownloadService extends BaseDownloadService {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        updateThread().downloadFail("");
+                        updateThread().downloadFail("下载失败，请重试！");
                     }
                 });
     }
@@ -134,6 +140,9 @@ public class DownloadService extends BaseDownloadService {
             case DownloadTags.DOWNLOAD_START:
                 builder.setOngoing(true);
                 builder.setSmallIcon(mSmallIcon);
+                builder.setChannelId(channelId);
+                builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE); //悬浮通知设置
+                builder.setPriority(NotificationCompat.PRIORITY_MAX);  //悬浮通知设置
                 builder.setAutoCancel(false);
                 builder.setContentIntent(null);
                 builder.setContentText("0%");
@@ -142,17 +151,36 @@ public class DownloadService extends BaseDownloadService {
                 break;
             case DownloadTags.DOWNLOADING:
                 builder.setProgress(100, (int) msg.obj, false);
-                builder.setContentInfo(AppUtils.getPercent((int) msg.obj, 100));
+                builder.setContentText(AppUtils.getPercent((int) msg.obj, 100));
                 break;
             case DownloadTags.DOWNLOAD_SUCCESS:
+                mIntent = new Intent(Intent.ACTION_VIEW);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {   //Android7.0开始安装路径发生改变
+                    Uri apkUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileProvider", new File((String) msg.obj));
+                    mIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    mIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                } else {
+                    Uri apkUri = Uri.fromFile(new File((String) msg.obj));
+                    mIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                }
+                mPendingIntent = PendingIntent.getActivity(this, 0, mIntent, 0);
+                builder.setContentIntent(mPendingIntent);
                 builder.setContentTitle("新版本下载完成");
                 builder.setContentText("点击安装");
                 break;
             case DownloadTags.DOWNLOAD_FAIL:
+                mIntent = new Intent(this, DownloadService.class);
+                mIntent.putExtra(DownloadTags.APK_URL, mApkUrl);
+                mIntent.putExtra(DownloadTags.FILE_MD5, mFileMd5);
+                mIntent.putExtra(DownloadTags.ICON_ID, mSmallIcon);
+                mPendingIntent = PendingIntent.getService(this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                builder.setContentIntent(mPendingIntent);
                 builder.setContentTitle("新版本下载失败");
                 builder.setContentText("点击重试");
                 break;
         }
-        mNotificationManager.notify(NotificationID, builder.build());
+        notification = builder.build();
+        notification.flags = Notification.FLAG_ONGOING_EVENT;//设置通知栏常驻
+        mNotificationManager.notify(NotificationID, notification);
     }
 }
